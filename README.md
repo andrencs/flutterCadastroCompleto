@@ -1,5 +1,8 @@
 # cadastro_completo
 
+Projeto criado no decorrer do estudo do Flutter.
+Link da aula: https://www.youtube.com/watch?v=ViahqKZzZ7Y
+
 A new Flutter project.
 
 ## Getting Started
