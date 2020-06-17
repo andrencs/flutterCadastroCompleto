@@ -1,8 +1,10 @@
-import 'dart:math';
+import 'dart:convert';
 
 import 'package:cadastro_completo/data/dummy_users.dart';
 import 'package:cadastro_completo/models/user.dart';
+import 'package:cadastro_completo/sensitiveData/constants.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class Users with ChangeNotifier {
   final Map<String, User> _items = {...DUMMY_USERS};
@@ -19,7 +21,7 @@ class Users with ChangeNotifier {
     return _items.values.elementAt(i);
   }
 
-  void put(User user) {
+  Future<void> put(User user) async {
     if (user == null) {
       return;
     }
@@ -28,10 +30,33 @@ class Users with ChangeNotifier {
         user.id.trim().isNotEmpty &&
         _items.containsKey(user.id)) {
       //alterar
+      await http.patch(
+        '$DB_LINK/users/${user.id}.json',
+        body: json.encode(
+          {
+            'name': user.name,
+            'email': user.email,
+            'avatarURL': user.avatarURL,
+          },
+        ),
+      );
+
       _items.update(user.id, (_) => user);
     } else {
       //adicionar
-      final id = Random().nextDouble().toString();
+      final response = await http.post(
+        '$DB_LINK/users.json',
+        body: json.encode(
+          {
+            'name': user.name,
+            'email': user.email,
+            'avatarURL': user.avatarURL,
+          },
+        ),
+      );
+
+      final id = json.decode(response.body)['name'];
+
       _items.putIfAbsent(
         id,
         () => User(
@@ -46,8 +71,8 @@ class Users with ChangeNotifier {
     notifyListeners();
   }
 
-  void remove(User user){
-    if(user != null && user.id != null){
+  void remove(User user) {
+    if (user != null && user.id != null) {
       _items.remove(user.id);
       notifyListeners();
     }
